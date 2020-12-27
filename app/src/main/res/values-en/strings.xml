@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Notification</string>
+    <string name="reproducir">Play</string>
+    <string name="txt_reproducir">Listen notification</string>
+    <string name="imagen">imagen</string>
+    <string name="grabar_audio">Rec audio</string>
+    <string name="bfecha">DATE</string>
+    <string name="bhora">TIME</string>
+    <string name="txtf">Date</string>
+    <string name="txth">Time</string>
+    <string name="balarma">Create alarm</string>
+    <string name="rec_audio">Record</string>
+</resources>

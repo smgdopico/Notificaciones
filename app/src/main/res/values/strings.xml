@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Notificaciones</string>
+    <string name="reproducir">Reproducir</string>
+    <string name="txt_reproducir">Escuchar notificacion</string>
+    <string name="imagen">imagen</string>
+    <string name="grabar_audio">Grabar audio</string>
+    <string name="bfecha">FECHA</string>
+    <string name="bhora">HORA</string>
+    <string name="txtf">Fecha</string>
+    <string name="txth">Hora</string>
+    <string name="balarma">Crear alarma</string>
+    <string name="rec_audio">Grabar</string>
+</resources>
