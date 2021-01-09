@@ -147,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
                         txtH.setText(horaDia + " : " + minDia);
                         fecha.set(Calendar.HOUR_OF_DAY, horaDia);
                         fecha.set(Calendar.MINUTE, minDia);
+                        fecha.set(Calendar.SECOND,0);
                     }
                 }, hora1, minutos1, true);
                 dataPickerHora.show();//muestra el dialogo que contiene la hora en este caso
@@ -208,10 +209,11 @@ public class MainActivity extends AppCompatActivity {
             a la clase que hicimos con los metodo que crean la notificacion*/
           //todo -------------------------------------------------------------------------------------------------------------
           //todo cambiamos este intent por el de la otra clase a ver si va
-            Intent i = new Intent(MainActivity.this, MostrarNotificacionService.class);
+            Intent i = new Intent(MainActivity.this, MostrarNotifyBroadcastReceiver.class);
          //   Intent i = new Intent(MainActivity.this, ServiceNotificacion.class);
             i.putExtra(MostrarNotificacionService.RUTA_SONIDO,rutaSalida);
-            PendingIntent pi = PendingIntent.getService(MainActivity.this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this,MostrarNotifyBroadcastReceiver.CODIGO_SERVICIO,i,PendingIntent.FLAG_UPDATE_CURRENT);
+           // borrar no vale ya ----------------- PendingIntent pi = PendingIntent.getService(MainActivity.this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
             alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(fecha.getTimeInMillis(), pi), pi);
             Toast.makeText(getApplicationContext(), "Alarma Guardada", Toast.LENGTH_LONG).show();
             //todo --------------------------------------------------------------------------------------------------------------
