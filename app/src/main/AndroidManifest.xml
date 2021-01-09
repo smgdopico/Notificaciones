@@ -47,6 +47,8 @@
         </activity>
         <!--para que nuestra clase servicio funcione hay que ponrla aqui como un servicio-->
         <service android:name=".MostrarNotificacionService"/>
+        <service android:name=".ServiceNotificacion"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
     </application>
 
 </manifest>
