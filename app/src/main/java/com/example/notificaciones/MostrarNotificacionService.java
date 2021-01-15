@@ -13,12 +13,12 @@ import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-// esto es un service una actuivity sin interfaz
+// esto es un service una activity sin interfaz intenetService que levanta un broadcast un servicio
 public class MostrarNotificacionService extends IntentService {
 
     //estas son la variables y los metodos que hemos creado en el mein los hemos traido a esta clase que obliga a externder el intent service
     public final static String CHANNEL_ID = "notificacion";
-    public final static int NOTIFICACION_ID = 1;
+    public  static int NOTIFICACION_ID = 1;
     public static final String RUTA_SONIDO ="rutaSonido";
 
     public MostrarNotificacionService() {
@@ -28,7 +28,7 @@ public class MostrarNotificacionService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         //código para mostrar la notificacion
-        //llamamos al metodo  que comprueba el sdk y al que crea la notificacion
+        //llamamos al metodo  que comprueba el sdk y al que crea la notificacion y recogemos la ruta del sonido para asignarlo
         String ruta=intent.getStringExtra(RUTA_SONIDO);
         creacionCANALNotificacionSuperiorOreo();
         creaNotificacion(ruta);
@@ -84,7 +84,7 @@ public class MostrarNotificacionService extends IntentService {
         //    notificationManager.notify(NOTIFICATION_ID, notificacion);
         //https://es.stackoverflow.com/questions/173735/alarmmanager-no-funciona-cuando-se-reinicia-el-dispositivo
         NotificationManagerCompat notificationCompat = NotificationManagerCompat.from(getApplicationContext());
-        notificationCompat.notify(NOTIFICACION_ID, contructor.build());
+        notificationCompat.notify(NOTIFICACION_ID++, contructor.build());
     }
     private void creacionCANALNotificacionSuperiorOreo() {
         //SI LA VERSION DEL SDK ES SUPERIOR O IGUAL A O HACES LO SIGUIENTE

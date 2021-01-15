@@ -22,7 +22,7 @@ public class OirNotificacionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_oir_notificacion);
-
+        //recoemos los datos  del intent e igualamos al string ruta
         final String ruta=getIntent().getStringExtra(MostrarNotificacionService.RUTA_SONIDO);
         //para que se quite la notificacion UNA VEZ QUE CLICKEMOS HAY QUE USAR ESTO
         NotificationManagerCompat notificationCompat = NotificationManagerCompat.from(getApplicationContext());

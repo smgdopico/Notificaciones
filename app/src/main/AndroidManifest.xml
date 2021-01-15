@@ -11,20 +11,17 @@
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.SET_ALARM"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <!--PERMISOS DUPLICADOS
-         <uses-permission android:name="android.permission.READ_CALENDAR" />
-             <uses-permission android:name="android.permission.WAKE_LOCK" />
-     -->
+
     <!--PERMISO DE ALARMA en principio todo vibracion escribir y leer  el reloj el calendatio -->
     <!--PERMISO DE ALARMA en principio para que reciba para que trabaje en segundo plano para el sonido u la vibracion-->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <!-- permiso para el boot d einicio-->
-   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <!-- permiso para que este en stamina-->
-   <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <!-- permiso para el boot de inicio-->
+    <!--  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+      permiso para que este en stamina-->
+    <!-- <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/> -->
 
    <application
        android:allowBackup="true"
@@ -33,7 +30,7 @@
        android:roundIcon="@mipmap/ic_launcher_round"
        android:supportsRtl="true"
        android:theme="@style/AppTheme">
-       <!--hay que modificar el manifest asi poniendo esto tal cual o no volveremos a la pantalla principal -->
+       <!--hay que modificar el manifest asi poniendo esto tal cual o no volveremos a la pantalla principal junto con las lineas de abriractivityEscuchar -->
         <activity android:name=".OirNotificacionActivity"
             android:parentActivityName=".MainActivity">
             <!--para quedarse dentro de la aplicacion es el parent-->
@@ -48,51 +45,13 @@
                 <!--NUEVA ACCION-->
                 <action android:name="android.intent.action.SET_ALARM"/>
                 <category android:name="android.intent.category.LAUNCHER" />
-                <!-- a ver si esto quiere ir
-            <action android:name="android.intent.action.BOOT_COMPLETED" />
-            <category android:name="android.intent.category.DEFAULT" />
-                -->
             </intent-filter>
         </activity>
-       <!--añado esto a ver si va
-       <receiver android:name=".MostrarNotifyBroadcastReceiver"
-           android:exported="false">
-           <intent-filter>
-               <action android:name="android.intent.action.BOOT_COMPLETED"/>
-           </intent-filter>
-       </receiver>-->
-        <!--para que nuestra clase servicio funcione hay que ponrla aqui como un servicio
-       <receiver android:name=".MostrarNotifyBroadcastReceiver">
-           <action android:name="android.intent.action.BOOT_COMPLETED"/>
-       </receiver>
-
-
-
-       aqui registro el escuchador del Reciever para el evento de carga completo
-https://es.stackoverflow.com/questions/75391/arrancar-una-aplicacion-programada-en-java-para-android-en-el-startup/75403#75403
-      <action android:name="android.intent.action.BOOT_COMPLETED" />
-
-         <receiver android:name=".MostrarNotifyBroadcastReceiver"
-       android:enabled="true"
-       android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
-       <intent-filter>
-           <action android:name="android.intent.action.BOOT_COMPLETED" />
-           <category android:name="android.intent.category.DEFAULT" />
-       </intent-filter>
-   </receiver>
-       -->
-
-
         <service android:name=".MostrarNotificacionService"/>
         <receiver
             android:name=".MostrarNotifyBroadcastReceiver"
-
             android:process=":remote" >
         </receiver>
-
-     <!-- Antes de que se cierre la aplicacion hacer esto
-      <service android:name=".MostrarNotifyBroadcastReceiver"
-           android android:enabled="true"></service>-->
     </application>
 
 </manifest>

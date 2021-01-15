@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     // variable pending
     private PendingIntent pendingIntent;
-    //hay que crear el nombre del canal y la id del canal
+    //hay que crear el nombre del canal y la id del canal porque android lo pide asi
     public final static String CHANNEL_ID = "notificacion";
     public final static int NOTIFICACION_ID = 1;
     //variables de fechas
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     //todo variables de la grabacion
     public MediaRecorder grabacion; //OBJETO
     public String rutaSalida = null; //RUTA DE SALIDA
-    //private int grabacionContador = 1;//VARIABLE PARA QUE LAS GRABACIONES NO SE SOBREECRIBAn
+    //private int grabacionContador = 1;//VARIABLE PARA QUE LAS GRABACIONES NO SE SOBREECRIBAN
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                 //hacemos lo mismo que en fecha creamo sun calendario para recoger los datos de hora del sistema creamos un datapicker y guardamos los datos
                 Calendar x = Calendar.getInstance();
                 hora1 = x.get(Calendar.HOUR_OF_DAY);
-                minutos1 = x.get(Calendar.MINUTE);
+                minutos1 = x.get(Calendar.MINUTE);//            el context: ojo si no es el nombre y activity rompe
                 TimePickerDialog dataPickerHora = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int horaDia, int minDia) {
@@ -215,7 +215,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "No ha seleecionado los minutos correctamente", Toast.LENGTH_SHORT).show();
             banderita = false;
         }
-
         //AQUI NOS MANDA A LA CLASE SERVICIO UNA ACTIVITY SIN INTERFAZ...
         if (banderita) {
             //se crea la alarma, se le pasa la app y se coge del sistema el alarm_service
@@ -225,12 +224,12 @@ public class MainActivity extends AppCompatActivity {
             //creamos un pending  y le mandamos main y nuestro intent, creamos la alarma al que le mandamos nuestra fecha que es clockInfo ese.. y nuestro pending intent y nos lleva
             a la clase que hicimos con los metodo que crean la notificacion*/
           //todo -------------------------------------------------------------------------------------------------------------
-          //todo cambiamos este intent por el de la otra clase a ver si va
+          //cambiamos este intent por el de la otra clase que tiene el broadcast
             Intent i = new Intent(MainActivity.this, MostrarNotifyBroadcastReceiver.class);
-          // Intent i = new Intent(MainActivity.this, ServiceNotificacion.class);
-            i.putExtra(MostrarNotificacionService.RUTA_SONIDO,rutaSalida);
-          PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this,MostrarNotifyBroadcastReceiver.CODIGO_SERVICIO,i,PendingIntent.FLAG_UPDATE_CURRENT);
+          //este era el que teniamos antes que yua no sirve Intent i = new Intent(MainActivity.this, ServiceNotificacion.class);
+            i.putExtra(MostrarNotificacionService.RUTA_SONIDO,rutaSalida);//le mandamos los datos en el intent
             // borrar no vale ya ----------------- PendingIntent pi = PendingIntent.getService(MainActivity.this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this,MostrarNotifyBroadcastReceiver.CODIGO_SERVICIO,i,PendingIntent.FLAG_UPDATE_CURRENT);
             alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(fecha.getTimeInMillis(), pi), pi);
             Toast.makeText(getApplicationContext(), "Alarma Guardada", Toast.LENGTH_LONG).show();
             //todo --------------------------------------------------------------------------------------------------------------
@@ -248,11 +247,6 @@ public class MainActivity extends AppCompatActivity {
 }
 
 
-//https://stackoverflow.com/questions/42126979/cannot-keep-android-service-alive-after-app-is-closed/64113820#64113820
-//https://stackoverflow.com/questions/30525784/android-keep-service-running-when-app-is-killed
-//https://developer.android.com/reference/android/service/dreams/DreamService
-//https://developer.android.com/guide/components/activities/process-lifecycle
-//https://es.stackoverflow.com/questions/373953/caused-by-android-view-inflateexception-binary-xml-file-line-8-error-inflati
 
 
 
@@ -265,6 +259,85 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 //comentarios cosas a mejorar y metodos antiguos o modificaciones de cogigo que quedan aqui por si son necesarias de nuevo
 
 //todo para mejorar la aplicacion crear una base de datos guardando la ruta de una carpeta con todos los audios
