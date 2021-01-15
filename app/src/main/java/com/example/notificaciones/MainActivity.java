@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                         txtH.setText(horaDia + " : " + minDia);
                         fecha.set(Calendar.HOUR_OF_DAY, horaDia);
                         fecha.set(Calendar.MINUTE, minDia);
-                        fecha.set(Calendar.SECOND,0);
+                        fecha.set(Calendar.SECOND,0);// esto es para que sea mas exacto y pille el segundo 0 del minuto, si no lo hac ia al final o al principio o con x de diferencia
                     }
                 }, hora1, minutos1, true);
                 dataPickerHora.show();//muestra el dialogo que contiene la hora en este caso
