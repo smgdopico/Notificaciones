@@ -1,5 +1,6 @@
 package com.example.notificaciones;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -7,12 +8,19 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -60,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
 
+
         // necesita estas lineas de codigo para trabajar con los permisos de grabar guardar etc si no no funciona y lo ponemos EN el main pq si no los permite
         if (ContextCompat.checkSelfPermission(getApplicationContext(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
@@ -68,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
                         Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             //todo esto pide escribir y grabar
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, 1000);
+
         }
 
         gestion();
@@ -79,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
         // Poñemos no texto a Activity e o método onde nos atopamos xunto coa variable que queremos saber o seu valor
         amosarMensaxeDebug("MainActivity => onCreate => " + getApplicationInfo().loadLabel(getPackageManager()));
     }
+
+
 
     //TODO/////////////////////////////////// METODO HECHO  GESTION DE BOTONES ETC////////////////////////////////////////////////////////
     private void gestion() {
@@ -99,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (grabacion == null) {                  //contador++ o los milisegundos del sistema
+                if (grabacion == null) {        //contador++ o los milisegundos del sistema
                     rutaSalida = getFilesDir() + "/grabacion" + System.currentTimeMillis()+ ".mp3";//creamos un archivo de salida de audio
                     //rutaSalida=Environment.getDataDirectory().getAbsolutePath();
                     //  rutaSalida = Environment.getExternalStorageDirectory().getAbsolutePath() + "/grabacion.mp3";
@@ -118,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (grabacion != null) {
                     //si es diferente de nulo necesitamos para la grabacion pasar por el release(lanzamiento) e igualarla a nula
                     grabacion.stop();
+                    grabacion.reset();
                     grabacion.release();
                     grabacion = null;
                     bRec.setBackgroundResource(R.drawable.stop_rec);//cambia el fondo del color al parar de grabar
@@ -125,6 +138,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        //https://stackoverflow.com/questions/17840521/android-fatal-signal-11-sigsegv-at-0x636f7d89-code-1-how-can-it-be-tracked
+        //https://stackoverflow.com/questions/11871421/trying-to-record-audio-but-getting-message-mediarecorder-went-away-with-unhandl
+
+
 
 
         //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
@@ -147,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                         txtH.setText(horaDia + " : " + minDia);
                         fecha.set(Calendar.HOUR_OF_DAY, horaDia);
                         fecha.set(Calendar.MINUTE, minDia);
-                        fecha.set(Calendar.SECOND,0);// esto es para que sea mas exacto y pille el segundo 0 del minuto, si no lo hac ia al final o al principio o con x de diferencia
+                        fecha.set(Calendar.SECOND,0);
                     }
                 }, hora1, minutos1, true);
                 dataPickerHora.show();//muestra el dialogo que contiene la hora en este caso
@@ -210,10 +227,10 @@ public class MainActivity extends AppCompatActivity {
           //todo -------------------------------------------------------------------------------------------------------------
           //todo cambiamos este intent por el de la otra clase a ver si va
             Intent i = new Intent(MainActivity.this, MostrarNotifyBroadcastReceiver.class);
-         //   Intent i = new Intent(MainActivity.this, ServiceNotificacion.class);
+          // Intent i = new Intent(MainActivity.this, ServiceNotificacion.class);
             i.putExtra(MostrarNotificacionService.RUTA_SONIDO,rutaSalida);
-            PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this,MostrarNotifyBroadcastReceiver.CODIGO_SERVICIO,i,PendingIntent.FLAG_UPDATE_CURRENT);
-           // borrar no vale ya ----------------- PendingIntent pi = PendingIntent.getService(MainActivity.this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+          PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this,MostrarNotifyBroadcastReceiver.CODIGO_SERVICIO,i,PendingIntent.FLAG_UPDATE_CURRENT);
+            // borrar no vale ya ----------------- PendingIntent pi = PendingIntent.getService(MainActivity.this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
             alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(fecha.getTimeInMillis(), pi), pi);
             Toast.makeText(getApplicationContext(), "Alarma Guardada", Toast.LENGTH_LONG).show();
             //todo --------------------------------------------------------------------------------------------------------------

@@ -80,6 +80,9 @@ public class MostrarNotificacionService extends IntentService {
         //llamando directamente el pending intent que devolvemos de arriba
         contructor.setContentIntent(abreCtivityEscuhar(ruta));
         // AHOPRA CREMOS LA VARIABLE
+        //notificationManager = (NotificationManager) contexto.getSystemService(Context.NOTIFICATION_SERVICE);
+        //    notificationManager.notify(NOTIFICATION_ID, notificacion);
+        //https://es.stackoverflow.com/questions/173735/alarmmanager-no-funciona-cuando-se-reinicia-el-dispositivo
         NotificationManagerCompat notificationCompat = NotificationManagerCompat.from(getApplicationContext());
         notificationCompat.notify(NOTIFICACION_ID, contructor.build());
     }

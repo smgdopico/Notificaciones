@@ -9,6 +9,7 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
 
@@ -18,7 +19,7 @@ import androidx.core.app.JobIntentService;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-public class ServiceNotificacion extends JobIntentService {
+public class ServiceNotificacion extends Service {
 
 
     //estas son la variables y los metodos que hemos creado en el mein los hemos traido a esta clase que obliga a externder el intent service
@@ -26,11 +27,13 @@ public class ServiceNotificacion extends JobIntentService {
     public final static int NOTIFICACION_ID = 1;
     public static final int JOB_ID = 1;
 
-    public static void enqueueWork(Context context, Intent work) {
-        enqueueWork(context, ServiceNotificacion.class, JOB_ID, work);
-    }
 
-    @Override
+
+  /*  public static void enqueueWork(Context context, Intent work) {
+        enqueueWork(context, ServiceNotificacion.class, JOB_ID, work);
+    }*/
+
+   // @Override
     protected void onHandleWork(@NonNull Intent intent) {
         //código para mostrar la notificacion
         //llamamos al metodo  que comprueba el sdk y al que crea la notificacion
@@ -99,6 +102,32 @@ public class ServiceNotificacion extends JobIntentService {
             notificationManager.createNotificationChannel(notificationChannel);
         }
     }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+public void onCreate(){
+        super.onCreate();
+   // MediaPlayer x=MediaPlayer.create(MainActivity.this,MostrarNotificacionService.RUTA_SONIDO);
+
+    }
+   public int  onStartCommand(Intent intent, int flags, int startId){
+
+        //esto es una constante que devuelve por si el servicio ha sido matado o en ejecucion
+return START_STICKY;
+}
+    /*public void  startForeground(int id, Notification notification){
+
+    }*/
+   // Si su servicio se inicia (en ejecución Context#startService(Intent)),
+    // haga que este servicio también se ejecute en primer plano,
+    // proporcionando la notificación en curso que se mostrará al usuario mientras se encuentra en este estado.
+
+
+
 }
 //todo solo es para el service
   /*  @Nullable
