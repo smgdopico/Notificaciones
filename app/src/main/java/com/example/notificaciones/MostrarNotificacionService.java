@@ -13,11 +13,13 @@ import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-// esto es un service una actuivity sin interfaz
+// esto es un service una activity sin interfaz intenetService que levanta un broadcast un servicio
 public class MostrarNotificacionService extends IntentService {
-//estas son la variables y los metodos que hemos creado en el mein los hemos traido a esta clase que obliga a externder el intent service
+
+    //estas son la variables y los metodos que hemos creado en el mein los hemos traido a esta clase que obliga a externder el intent service
     public final static String CHANNEL_ID = "notificacion";
-    public final static int NOTIFICACION_ID = 1;
+    public  static int NOTIFICACION_ID = 1;
+    public static final String RUTA_SONIDO ="rutaSonido";
 
     public MostrarNotificacionService() {
         super("MostrarNotificacionService");
@@ -25,18 +27,17 @@ public class MostrarNotificacionService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        //código para mostrar la notificación
-        //llamamos al metodo que crea la notificacion
+        //código para mostrar la notificacion
+        //llamamos al metodo  que comprueba el sdk y al que crea la notificacion y recogemos la ruta del sonido para asignarlo
+        String ruta=intent.getStringExtra(RUTA_SONIDO);
         creacionCANALNotificacionSuperiorOreo();
-        creaNotificacion();
+        creaNotificacion(ruta);
 
     }
 
     //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
-
     //CREAR LAS ALERTAS DEL MOVIL
-    private PendingIntent abreCtivityEscuhar() {
-
+    private PendingIntent abreCtivityEscuhar(String ruta) {
         // creamos un intent para ir a nuestra segunda pantalla cuando pulsemos en el icono
         Intent intent = new Intent(getApplicationContext(), OirNotificacionActivity.class);
         // hacemos que si el usuario le da atras vaya a nuestro main o se saldra de app
@@ -44,16 +45,16 @@ public class MostrarNotificacionService extends IntentService {
         // le decimos que pantalla queremos que lo haga
         taskStackBuilder.addParentStack(OirNotificacionActivity.class);
         // le pasamos el intent
+        intent.putExtra(RUTA_SONIDO,ruta);
         taskStackBuilder.addNextIntent(intent);
         // y luego a nuestra variable pending le decimos que coja el taskt y le pasamos esos dos parametros
         //pendingIntent= taskStackBuilder.getPendingIntent(1,PendingIntent.FLAG_UPDATE_CURRENT);
         //devuelvo el pending intent que acabo de crear
         return taskStackBuilder.getPendingIntent(1, PendingIntent.FLAG_UPDATE_CURRENT);
-
     }
 
     // LE DAMOS FORMA A LA NOTIFICACION COLORES Y DE MAS HISTORIAS, SI LA VERSION ES ANTERIOR A OREO SE EJECUTARA NORMAL SI NO NO FUNCIONARA
-    private void creaNotificacion() {
+    private void creaNotificacion(String  ruta) {
         //T CREAMOS LA NOTIFICACION Y LE PASAMOS EL NANAL
         NotificationCompat.Builder contructor = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
         // CREAMOS EL ICONO QUE APARECERA
@@ -62,11 +63,11 @@ public class MostrarNotificacionService extends IntentService {
         contructor.setContentTitle("Nota de audio");
         contructor.setContentText("Se borrara despues de oirlo");
         // LE PONEMOS UN COLOR PARA QUE QUEDE BONITO
-        contructor.setColor(Color.RED);
+        contructor.setColor(Color.GREEN);
         // LE DAMOS UNA PRIORIDAD, AUNQUE NO ES NECESARIO
         contructor.setPriority(NotificationCompat.PRIORITY_MAX);
         //LE PONEMOS UNA LUCECITA DE ALERTA PASANDO EL CORLOR Y LOS SEGUNDOS
-        contructor.setLights(Color.RED, 1000, 1000);
+        contructor.setLights(Color.GREEN, 1000, 1000);
         //VIVRACION aunq en el emulador no se ve queda mas pofesiona
         contructor.setVibrate(new long[]{1000, 1000, 1000});
         // ESTO VALE PARA PONER UN SONIDO POR DEFECTO O CREANDO UNA CARPETA CON SONIDOS LE PASAMOS EL NUESTRO
@@ -74,13 +75,16 @@ public class MostrarNotificacionService extends IntentService {
         contructor.setDefaults(Notification.DEFAULT_SOUND);
 
         //esto hay que ponerlo para cuando le demos a la notificacion abra nuestra activity 2
-        // al contructor le ponemos el content inten y nuestra variable pending
+        // al contructor le ponemos el content intent y nuestra variable pending
         //contructor.setContentIntent(pendingIntent);
         //llamando directamente el pending intent que devolvemos de arriba
-        contructor.setContentIntent(abreCtivityEscuhar());
+        contructor.setContentIntent(abreCtivityEscuhar(ruta));
         // AHOPRA CREMOS LA VARIABLE
+        //notificationManager = (NotificationManager) contexto.getSystemService(Context.NOTIFICATION_SERVICE);
+        //    notificationManager.notify(NOTIFICATION_ID, notificacion);
+        //https://es.stackoverflow.com/questions/173735/alarmmanager-no-funciona-cuando-se-reinicia-el-dispositivo
         NotificationManagerCompat notificationCompat = NotificationManagerCompat.from(getApplicationContext());
-        notificationCompat.notify(NOTIFICACION_ID, contructor.build());
+        notificationCompat.notify(NOTIFICACION_ID++, contructor.build());
     }
     private void creacionCANALNotificacionSuperiorOreo() {
         //SI LA VERSION DEL SDK ES SUPERIOR O IGUAL A O HACES LO SIGUIENTE
@@ -95,5 +99,6 @@ public class MostrarNotificacionService extends IntentService {
             notificationManager.createNotificationChannel(notificationChannel);
         }
     }
+
 }
 

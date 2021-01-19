@@ -1,26 +1,27 @@
 package com.example.notificaciones;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -33,24 +34,31 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
+    //codigo que manda poner Angel
+    public final static boolean DEBUG = true;       // Está activada a depuración. Na versión release se ten que poñer a false
+    public final static String DEBUG_TAG="notificaciones";
+    public static void amosarMensaxeDebug(String mensaxe){
+        if (DEBUG){
+            Log.d(DEBUG_TAG,mensaxe);
+        }
+    }
+
     // variable pending
     private PendingIntent pendingIntent;
-    //hay que crear el nombre del canal y la id del canal
+    //hay que crear el nombre del canal y la id del canal porque android lo pide asi
     public final static String CHANNEL_ID = "notificacion";
     public final static int NOTIFICACION_ID = 1;
-
     //variables de fechas
     private int dia1, mes1, año1, hora1, minutos1;
     private String fechaString="";
     private Calendar fecha = Calendar.getInstance();
-    // variable de alarmas
+    // variable de alarma
     public AlarmManager alarmManager;
- //   public static final String ALARMA = "alarma";
-
     //todo variables de la grabacion
     public MediaRecorder grabacion; //OBJETO
-    public static String rutaSalida = null; //RUTA DE SALIDA
-    //private int grabacionContador = 1;//VARIABLE PARA QUE LAS GRABACIONES NO SE SOBREECRIBAM
+    public String rutaSalida = null; //RUTA DE SALIDA
+   public static int contador=1;
+    //private int grabacionContador = 1;//VARIABLE PARA QUE LAS GRABACIONES NO SE SOBREECRIBAN
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,18 +77,23 @@ public class MainActivity extends AppCompatActivity {
                         Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             //todo esto pide escribir y grabar
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, 1000);
+
         }
 
         gestion();
         //AlarmManager alarma manager despierta mi app y me muestra mi notificacion coger el sonido como se pueda y oirlo
-        // //SharedPreferences para guarda  valor que el nombre que invento y ruta sonido
+        //SharedPreferences para guarda  valor que el nombre que invento y ruta sonido
+
+        //codigo que manda poner Angel
+        // Exemplo de uso
+        // Poñemos no texto a Activity e o método onde nos atopamos xunto coa variable que queremos saber o seu valor
+        amosarMensaxeDebug("MainActivity => onCreate => " + getApplicationInfo().loadLabel(getPackageManager()));
     }
+
+
 
     //TODO/////////////////////////////////// METODO HECHO  GESTION DE BOTONES ETC////////////////////////////////////////////////////////
     private void gestion() {
-
-
-
 
         Button bAlarma = findViewById(R.id.bAlarma);
         bAlarma.setOnClickListener(new View.OnClickListener() {
@@ -91,15 +104,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//GRABAR e informacion adicional en caso de usar la tarjeta, por si se quisiera hacer alguna mejora en el futuro etc etc
-/*        // /*Si desea obtener la ruta de su aplicación, use la getFilesDir()que le dará la ruta /data/data/your package/files
-        // Puede obtener la ruta usando la Environmentvar de su data/packageusando el
-        // getExternalFilesDir(Environment.getDataDirectory().getAbsolutePath()).getAbsolutePath(); que devolverá la ruta desde el directorio raíz
-        // de su almacenamiento externo como /storage/sdcard/Android/data/your pacakge/files/data
-        //Para acceder a los recursos externos, debe proporcionar el permiso de WRITE_EXTERNAL_STORAGEy READ_EXTERNAL_STORAGEen su manifiesto.
-        // <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-        // <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>*/
-
         //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
         //boton de grabar audio
         final Button bRec = findViewById(R.id.bRec);
@@ -107,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (grabacion == null) {
+                if (grabacion == null) {        //contador++ o los milisegundos del sistema
                     rutaSalida = getFilesDir() + "/grabacion" + System.currentTimeMillis()+ ".mp3";//creamos un archivo de salida de audio
                     //rutaSalida=Environment.getDataDirectory().getAbsolutePath();
                     //  rutaSalida = Environment.getExternalStorageDirectory().getAbsolutePath() + "/grabacion.mp3";
@@ -126,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (grabacion != null) {
                     //si es diferente de nulo necesitamos para la grabacion pasar por el release(lanzamiento) e igualarla a nula
                     grabacion.stop();
+                    grabacion.reset();
                     grabacion.release();
                     grabacion = null;
                     bRec.setBackgroundResource(R.drawable.stop_rec);//cambia el fondo del color al parar de grabar
@@ -133,20 +138,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        //https://stackoverflow.com/questions/17840521/android-fatal-signal-11-sigsegv-at-0x636f7d89-code-1-how-can-it-be-tracked
+        //https://stackoverflow.com/questions/11871421/trying-to-record-audio-but-getting-message-mediarecorder-went-away-with-unhandl
 
-//todo ********************informacion de audio por si acaso*****************************************
-        // <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    /*            fMediaRecorder= new MediaRecorder();
-        fMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        fMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
-        fMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        fMediaRecorder.setAudioChannels(1);
-        fMediaRecorder.setAudioSamplingRate(8000);
 
-     //   fMediaRecorder.setOutputFile(fTmpFile.getAbsolutePath());
-     //   fMediaRecorder.prepare();
-        fMediaRecorder.start();*/
-//todo **************************************************************************************
 
 
         //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
@@ -162,21 +157,21 @@ public class MainActivity extends AppCompatActivity {
                 //hacemos lo mismo que en fecha creamo sun calendario para recoger los datos de hora del sistema creamos un datapicker y guardamos los datos
                 Calendar x = Calendar.getInstance();
                 hora1 = x.get(Calendar.HOUR_OF_DAY);
-                minutos1 = x.get(Calendar.MINUTE);
+                minutos1 = x.get(Calendar.MINUTE);//            el context: ojo si no es el nombre y activity rompe
                 TimePickerDialog dataPickerHora = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int horaDia, int minDia) {
                         txtH.setText(horaDia + " : " + minDia);
                         fecha.set(Calendar.HOUR_OF_DAY, horaDia);
                         fecha.set(Calendar.MINUTE, minDia);
+                        fecha.set(Calendar.SECOND,0);
                     }
                 }, hora1, minutos1, true);
                 dataPickerHora.show();//muestra el dialogo que contiene la hora en este caso
             }
         });
 
-
-///////////////////////////////////BOTON FECHA////////////////////////////////////////////////////////////
+        ///////////////////////////////////BOTON FECHA////////////////////////////////////////////////////////////
         Button h = findViewById(R.id.bFecha);
         h.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -191,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     //CAMBIAMOS LOS NOMBRES DE LOS ENTEROS PARA SABER QUE RECOGE
                     public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                        txtF.setText(String.valueOf(day) + " " + String.valueOf(month) + " " + String.valueOf(year));
+                        txtF.setText(String.valueOf(day) + " " + String.valueOf(month+1) + " " + String.valueOf(year));
                         fecha.set(year, month, day);//SE CUARDA EN UN CALENDAR NORMAL
                         fechaString = day + "/" + month + "/" + year;// TAMBIEN LOS METEMOS EN UN STRING FECHA
                     }
@@ -199,8 +194,177 @@ public class MainActivity extends AppCompatActivity {
                 dataPickerFecha.show();
             }
         });
-        ////////////METODO INSERVIBLE CREA LAS ALERTAS NADA MAS DARLE AL BOTON DE CREAR ///////////////////////////
-     /*   Button bCrear = findViewById(R.id.bCrear);
+
+//FIN DE GESTION (DONDE ESTAN LOS BOTONES)
+    }
+
+    //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
+    //TODO CREAR LAS ALARMAS PARA LINKAR A LAS NOTIFICACIONES
+    public void crearAlarma(final String fechaString, final int hora, int min, final Calendar fecha) {
+            //COMPROBACIONES QUE LOS DATOS ESTEN CORRECTOS
+        boolean banderita = true;
+        if (fechaString.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "No ha seleecionado fecha", Toast.LENGTH_SHORT).show();
+            banderita = false;
+        }
+        if (hora1 == -1 || hora1 > 24) {
+            Toast.makeText(getApplicationContext(), "No ha seleecionado una hora correcta", Toast.LENGTH_SHORT).show();
+            banderita = false;
+        }
+        if (minutos1 == -1 || minutos1 > 59) {
+            Toast.makeText(getApplicationContext(), "No ha seleecionado los minutos correctamente", Toast.LENGTH_SHORT).show();
+            banderita = false;
+        }
+        //AQUI NOS MANDA A LA CLASE SERVICIO UNA ACTIVITY SIN INTERFAZ...
+        if (banderita) {
+            //se crea la alarma, se le pasa la app y se coge del sistema el alarm_service
+            AlarmManager alarmManager = (AlarmManager) getApplicationContext().getSystemService(ALARM_SERVICE);
+          /*  //esto es un intent y devuelve un penguing intent de esos  que hice en abreCtivityEscuhar();
+            //tenemos que crear un servicio por eso creamos la clase mostrar notificaciones  y le pasamos este main
+            //creamos un pending  y le mandamos main y nuestro intent, creamos la alarma al que le mandamos nuestra fecha que es clockInfo ese.. y nuestro pending intent y nos lleva
+            a la clase que hicimos con los metodo que crean la notificacion*/
+          //todo -------------------------------------------------------------------------------------------------------------
+          //cambiamos este intent por el de la otra clase que tiene el broadcast
+            Intent i = new Intent(MainActivity.this, MostrarNotifyBroadcastReceiver.class);
+          //este era el que teniamos antes que yua no sirve Intent i = new Intent(MainActivity.this, ServiceNotificacion.class);
+            i.putExtra(MostrarNotificacionService.RUTA_SONIDO,rutaSalida);//le mandamos los datos en el intent
+            // borrar no vale ya ----------------- PendingIntent pi = PendingIntent.getService(MainActivity.this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+           // PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this,MostrarNotifyBroadcastReceiver.CODIGO_SERVICIO,i,PendingIntent.FLAG_UPDATE_CURRENT);
+
+            PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this,contador++,i,PendingIntent.FLAG_UPDATE_CURRENT);
+          //  PendingIntent pi2 = PendingIntent.getBroadcast(MainActivity.this,1,i,PendingIntent.FLAG_UPDATE_CURRENT);
+
+            alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(fecha.getTimeInMillis(), pi), pi);
+        //   alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(fecha.getTimeInMillis(), pi2), pi2);
+
+            Toast.makeText(getApplicationContext(), "Alarma Guardada", Toast.LENGTH_LONG).show();
+            //todo --------------------------------------------------------------------------------------------------------------
+          /* FORMA PREVIA A LA SOLUCION ACTUAL
+            //calendar recoge el TIEMPO REAL DESDE 1970 + 2000 QUE SON 2 SEGUNDOS Calendar.getInstance().getTime().getTime()+2000
+            //\\\\\\\\\\\\\\\\\\\\ esto ya no es necerario pero no quiero borrarlo aun  porque las dos lineas de arriba hacen lo mismo que estas\\\\\\\\\\\\\\\\\\\\\\\\\\
+            //  ((AlarmManager)getSystemService(ALARM_SERVICE)).set(AlarmManager.RTC_WAKEUP, Long.parseLong(fechaString+hora1+minutos1),abreCtivityEscuhar());
+            //  crearAlarma(fechaString, hora1, minutos1);*/
+
+        } else {
+            Toast.makeText(getApplicationContext(), "faltan datos para establecer la alarma", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+//comentarios cosas a mejorar y metodos antiguos o modificaciones de cogigo que quedan aqui por si son necesarias de nuevo
+
+//todo para mejorar la aplicacion crear una base de datos guardando la ruta de una carpeta con todos los audios
+//todo estos metodos ya no hacen falta en el main pq los metimos en el servicio
+
+ /*
+
+         //INFO DE LA API EN CUESTION DE ALARMAS
+
+       // void	setAlarmClock(AlarmManager.AlarmClockInfo info, PendingIntent operation)
+        // Programe una alarma que represente un despertador, que se utilizará para notificar al usuario cuando suene.
+        // void	setAndAllowWhileIdle(int type, long triggerAtMillis, PendingIntent operation)
+        //Me gusta  set(int, long, android.app.PendingIntent), pero esta alarma podrá ejecutarse incluso cuando el sistema esté inactivo de baja potencia (también conocido como
+        // void	setExact(int type, long triggerAtMillis, PendingIntent operation)
+        // Programe una alarma para que se envíe con precisión a la hora indicada.
+        //https://developer.android.com/reference/android/app/AlarmManager#setAlarmClock(android.app.AlarmManager.AlarmClockInfo,%20android.app.PendingIntent)
+        // Este método es parecido setExact(int, long, android.app.PendingIntent), pero implica RTC_WAKEUP.
+        // set(int, long, android.app.PendingIntent), pero esta alarma podrá ejecutarse incluso cuando el sistema esté en modo inactivo de bajo consumo
+
+           ////////////METODO INSERVIBLE CREA LAS ALERTAS NADA MAS DARLE AL BOTON DE CREAR ///////////////////////////
+       Button bCrear = findViewById(R.id.bCrear);
         bCrear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -214,17 +378,14 @@ public class MainActivity extends AppCompatActivity {
                  creacionCANALNotificacionSuperiorOreo();
                 creaNotificacion();
             }
-        });*/
-//FIN DE GESTION (DONDE ESTAN LOS BOTONES)
-    }
-
-    //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
+        });
+   //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
     //CREACION PendingIntent Y DEVOLVER PendingIntent PARA QUE NOS ABRE NUESTRA ACTIVITY
     // CREAR LAS ALERTAS DEL MOVIL
     private PendingIntent abreCtivityEscuhar() {
-        /*  creacionCANALNotificacionSuperiorOreo(); creaNotificacion(); */
-        //creamos un intent para ir a nuestra segunda pantalla cuando pulsemos en el icono
-        Intent intent = new Intent(getApplicationContext(), OirNotificacionActivity.class);
+          creacionCANALNotificacionSuperiorOreo(); creaNotificacion();
+//creamos un intent para ir a nuestra segunda pantalla cuando pulsemos en el icono
+       Intent intent = new Intent(getApplicationContext(), OirNotificacionActivity.class);
         // hacemos que si el usuario le da atras vaya a nuestro main o se saldra de app
         TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(this);
         // le decimos que pantalla queremos que lo haga
@@ -235,13 +396,11 @@ public class MainActivity extends AppCompatActivity {
         //pendingIntent= taskStackBuilder.getPendingIntent(1,PendingIntent.FLAG_UPDATE_CURRENT);
         //devuelvo el pending intent que acabo de crear
         return taskStackBuilder.getPendingIntent(1, PendingIntent.FLAG_UPDATE_CURRENT);
-
     }
-
-    //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
-    //CREACION DE VARIABLE Y SUS PAREMTROS LISTA
-    //LE DAMOS FORMA A LA NOTIFICACION COLORES Y DE MAS HISTORIAS, SI LA VERSION ES ANTERIOR A OREO SE EJECUTARA NORMAL SI NO NO FUNCIONARA POR ESO SE HIZO EL METODO CREAR CANALdEnoTIFICACION
-    private void creaNotificacion() {
+//TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
+//CREACION DE VARIABLE Y SUS PAREMTROS LISTA
+//LE DAMOS FORMA A LA NOTIFICACION COLORES Y DE MAS HISTORIAS, SI LA VERSION ES ANTERIOR A OREO SE EJECUTARA NORMAL SI NO NO FUNCIONARA POR ESO SE HIZO EL METODO CREAR CANALdEnoTIFICACION
+   private void creaNotificacion() {
         // CREAMOS LA NOTIFICACION Y LE PASAMOS EL CANAL
         NotificationCompat.Builder contructor = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
         // CREAMOS EL ICONO QUE APARECERA
@@ -261,22 +420,21 @@ public class MainActivity extends AppCompatActivity {
         //TODO VERTSION DE MEJORA QUIZAS SE PUDIERA HACER QUE AL LLEGAR LA NOTIFICACION SE ESCUCHE DIRECTAMENTE CON ESTE PARAMETRO.
         contructor.setDefaults(Notification.DEFAULT_SOUND);
 
-        // esto hay que ponerlo para cuando le demos a la notificacion abra nuestra activity 2
-        // al contructor le ponemos el content intent y nuestra variable pending
-        //contructor.setContentIntent(pendingIntent);
-        //llamando directamente el pending intent que devolvemos de arriba
-        contructor.setContentIntent(abreCtivityEscuhar());
+// esto hay que ponerlo para cuando le demos a la notificacion abra nuestra activity 2
+// al contructor le ponemos el content intent y nuestra variable pending
+//contructor.setContentIntent(pendingIntent);
+//llamando directamente el pending intent que devolvemos de arriba
+       contructor.setContentIntent(abreCtivityEscuhar());
         // AHOPRA CREaMOS LA VARIABLE
         NotificationManagerCompat notificationCompat = NotificationManagerCompat.from(getApplicationContext());
         notificationCompat.notify(NOTIFICACION_ID, contructor.build());
 
-    }
-
-    //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
-    //***************************** METODO LISTO  CONTROL DEL SDK POR VERSION SUPEROPR A O *****************************
-    //hay que crear este metodo por culpa delas versiones
-    // SI SON VERSIONES ANTERIORES ESTO NO SE EJECUTA SI SON POSTERIORES A O(oreo) SI
-    private void creacionCANALNotificacionSuperiorOreo() {
+//  }
+//TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
+//***************************** METODO LISTO  CONTROL DEL SDK POR VERSION SUPEROPR A O *****************************
+//hay que crear este metodo por culpa delas versiones
+// SI SON VERSIONES ANTERIORES ESTO NO SE EJECUTA SI SON POSTERIORES A O(oreo) SI
+ private void creacionCANALNotificacionSuperiorOreo() {
         //SI LA VERSION DEL SDK ES SUPERIOR O IGUAL A O HACES LO SIGUIENTE
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             //HAY QUE CREAR UN NOMBRE PARA EL CANAL
@@ -289,65 +447,7 @@ public class MainActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(notificationChannel);
         }
     }
-
-
-    //TODO/////////////////////////////////// METODO HECHO  ////////////////////////////////////////////////////////
-    //TODO CREAR LAS ALARMAS PARA LINKAR A LAS NOTIFICACIONES
-    public void crearAlarma(final String fechaString, final int hora, int min, final Calendar fecha) {
-            //COMPROBACIONES QUE LOS DATOS ESTEN CORRECTOS
-        boolean banderita = true;
-        if (fechaString.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "No ha seleecionado fecha", Toast.LENGTH_SHORT).show();
-            banderita = false;
-        }
-        if (hora1 == -1 || hora1 > 24) {
-            Toast.makeText(getApplicationContext(), "No ha seleecionado una hora correcta", Toast.LENGTH_SHORT).show();
-            banderita = false;
-        }
-        if (minutos1 == -1 || minutos1 > 59) {
-            Toast.makeText(getApplicationContext(), "No ha seleecionado los minutos correctamente", Toast.LENGTH_SHORT).show();
-            banderita = false;
-        }
-        //INFO DE LA API EN CUESTION DE ALARMAS
-      /*
-       // void	setAlarmClock(AlarmManager.AlarmClockInfo info, PendingIntent operation)
-        // Programe una alarma que represente un despertador, que se utilizará para notificar al usuario cuando suene.
-        // void	setAndAllowWhileIdle(int type, long triggerAtMillis, PendingIntent operation)
-        //Me gusta  set(int, long, android.app.PendingIntent), pero esta alarma podrá ejecutarse incluso cuando el sistema esté inactivo de baja potencia (también conocido como
-        // void	setExact(int type, long triggerAtMillis, PendingIntent operation)
-        // Programe una alarma para que se envíe con precisión a la hora indicada.
-        //https://developer.android.com/reference/android/app/AlarmManager#setAlarmClock(android.app.AlarmManager.AlarmClockInfo,%20android.app.PendingIntent)
-        // Este método es parecido setExact(int, long, android.app.PendingIntent), pero implica RTC_WAKEUP.
-        // set(int, long, android.app.PendingIntent), pero esta alarma podrá ejecutarse incluso cuando el sistema esté en modo inactivo de bajo consumo
-            */
-        //AQUI NOS MANDA A LA CLASE SERVICIO UNA ACTIVITY SIN INTERFAZ...
-        if (banderita) {
-            //se crea la alarma, se le pasa la app y se coge del sistema el alarm_service
-            AlarmManager alarmManager = (AlarmManager) getApplicationContext().getSystemService(ALARM_SERVICE);
-          /*  //esto es un intent y devuelve un penguing intent de esos  que hice en abreCtivityEscuhar();
-            //tenemos que crear un servicio por eso creamos la clase mostrar notificaciones  y le pasamos este main
-            //creamos un pending  y le mandamos main y nuestro intent, creamos la alarma al que le mandamos nuestra fecha que es clockInfo ese.. y nuestro pending intent y nos lleva
-            a la clase que hicimos con los metodo que crean la notificacion*/
-            Intent i = new Intent(MainActivity.this, MostrarNotificacionService.class);
-            PendingIntent pi = PendingIntent.getService(MainActivity.this, 0, i, 0);
-            alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(fecha.getTimeInMillis(), pi), pi);
-            Toast.makeText(getApplicationContext(), "Alarma Guardada", Toast.LENGTH_SHORT).show();
-          /* FORMA PREVIA A LA SOLUCION ACTUAL
-            //calendar recoge el TIEMPO REAL DESDE 1970 + 2000 QUE SON 2 SEGUNDOS Calendar.getInstance().getTime().getTime()+2000
-            //\\\\\\\\\\\\\\\\\\\\ esto ya no es necerario pero no quiero borrarlo aun  porque las dos lineas de arriba hacen lo mismo que estas\\\\\\\\\\\\\\\\\\\\\\\\\\
-            //  ((AlarmManager)getSystemService(ALARM_SERVICE)).set(AlarmManager.RTC_WAKEUP, Long.parseLong(fechaString+hora1+minutos1),abreCtivityEscuhar());
-            //  crearAlarma(fechaString, hora1, minutos1);*/
-
-        } else {
-            Toast.makeText(getApplicationContext(), "faltan datos para establecer la alarma", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-}
-//todo para mejorar la aplicacion crear una base de datos guardando la ruta de una carpeta con todos los audios
-
-/*
-*  public static void setAlarm(int i, Long timestamp, Context ctx) {
+  public static void setAlarm(int i, Long timestamp, Context ctx) {
         AlarmManager alarmManager = (AlarmManager) ctx.getSystemService(ALARM_SERVICE);
         Intent alarmIntent = new Intent(ctx, AlarmReceiver.class);
         PendingIntent pendingIntent;
@@ -355,9 +455,8 @@ public class MainActivity extends AppCompatActivity {
         alarmIntent.setData((Uri.parse("custom://" + System.currentTimeMillis())));
         alarmManager.set(AlarmManager.RTC_WAKEUP, timestamp, pendingIntent);
     }
-* */
 //primera prueba de codigo al ultilizar el calendario por defecto en la interfaz normal
-  /*      final TextView txt = findViewById(R.id.txt);
+      final TextView txt = findViewById(R.id.txt);
         String x;
         CalendarView calendario = findViewById(R.id.calendario);
         calendario.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
@@ -370,4 +469,20 @@ public class MainActivity extends AppCompatActivity {
      //   y para detenerlo:
      //     stoptService(new Intent(this, ClaseParaEjecutarEnSegundoPlano.class));
 
-*/
+
+
+//todo ********************informacion de audio por si acaso*****************************************
+        // <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    /*            fMediaRecorder= new MediaRecorder();
+        fMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        fMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
+        fMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        fMediaRecorder.setAudioChannels(1);
+        fMediaRecorder.setAudioSamplingRate(8000);
+
+     //   fMediaRecorder.setOutputFile(fTmpFile.getAbsolutePath());
+     //   fMediaRecorder.prepare();
+        fMediaRecorder.start();*/
+//todo **************************************************************************************
+
+/**/
